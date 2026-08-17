@@ -1,0 +1,2309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ANIME QUEST | Character Guessing Game</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+  
+  <style>
+    /* ==========================================================================
+       RESET & GLOBAL STYLES
+       ========================================================================== */
+    :root {
+      --bg-dark: #080612;
+      --bg-card: rgba(18, 14, 36, 0.75);
+      --bg-card-hover: rgba(30, 24, 58, 0.85);
+      --border-glow: rgba(168, 85, 247, 0.25);
+      --border-light: rgba(255, 255, 255, 0.1);
+      
+      --neon-purple: #a855f7;
+      --neon-purple-glow: rgba(168, 85, 247, 0.5);
+      --neon-cyan: #06b6d4;
+      --neon-cyan-glow: rgba(6, 182, 212, 0.5);
+      --neon-pink: #ec4899;
+      --neon-pink-glow: rgba(236, 72, 153, 0.5);
+      --neon-amber: #f59e0b;
+      --neon-green: #10b981;
+      
+      --text-main: #f3f4f6;
+      --text-muted: #9ca3af;
+      --text-dim: #6b7280;
+      
+      --font-display: 'Orbitron', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Ambient Background Image & FX */
+    .bg-banner {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      opacity: 0.18;
+      z-index: -2;
+      filter: blur(8px) saturate(1.4);
+      transform: scale(1.05);
+      transition: opacity 0.5s ease;
+    }
+
+    .bg-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: 
+        radial-gradient(circle at 15% 20%, rgba(168, 85, 247, 0.15), transparent 45%),
+        radial-gradient(circle at 85% 80%, rgba(6, 182, 212, 0.15), transparent 45%),
+        linear-gradient(to bottom, rgba(8, 6, 18, 0.85) 0%, rgba(8, 6, 18, 0.95) 100%);
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    /* Scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: rgba(8, 6, 18, 0.5);
+    }
+    ::-webkit-scrollbar-thumb {
+      background: var(--neon-purple);
+      border-radius: 3px;
+    }
+
+    /* ==========================================================================
+       TYPOGRAPHY & UI COMPONENTS
+       ========================================================================== */
+    h1, h2, h3, h4, .font-display {
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .glow-text-purple {
+      color: #e9d5ff;
+      text-shadow: 0 0 12px var(--neon-purple-glow);
+    }
+
+    .glow-text-cyan {
+      color: #cff4fc;
+      text-shadow: 0 0 12px var(--neon-cyan-glow);
+    }
+
+    .glow-text-pink {
+      color: #fce7f3;
+      text-shadow: 0 0 12px var(--neon-pink-glow);
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border-glow);
+      border-radius: 20px;
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 24px;
+      border-radius: 14px;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      outline: none;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn:active {
+      transform: scale(0.96);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--neon-purple), #7c3aed);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--neon-purple-glow);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 28px rgba(168, 85, 247, 0.7);
+      transform: translateY(-2px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-main);
+      border: 1px solid var(--border-light);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--neon-cyan);
+      box-shadow: 0 0 15px var(--neon-cyan-glow);
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, var(--neon-pink), #db2777);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--neon-pink-glow);
+    }
+
+    .btn-accent:hover {
+      box-shadow: 0 6px 28px rgba(236, 72, 153, 0.7);
+    }
+
+    .btn-sm {
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      border-radius: 10px;
+    }
+
+    .btn-block {
+      width: 100%;
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      font-family: var(--font-display);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .badge-purple { background: rgba(168, 85, 247, 0.2); color: #d8b4fe; border: 1px solid var(--neon-purple); }
+    .badge-cyan { background: rgba(6, 182, 212, 0.2); color: #a5f3fc; border: 1px solid var(--neon-cyan); }
+    .badge-pink { background: rgba(236, 72, 153, 0.2); color: #fbcfe8; border: 1px solid var(--neon-pink); }
+    .badge-amber { background: rgba(245, 158, 11, 0.2); color: #fde68a; border: 1px solid var(--neon-amber); }
+
+    /* Inputs */
+    .input-field {
+      width: 100%;
+      background: rgba(10, 8, 22, 0.8);
+      border: 1px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 14px 18px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .input-field:focus {
+      border-color: var(--neon-purple);
+      box-shadow: 0 0 15px var(--neon-purple-glow);
+    }
+
+    /* Select Inputs */
+    .select-field {
+      width: 100%;
+      background: rgba(10, 8, 22, 0.8);
+      border: 1px solid var(--border-glow);
+      border-radius: 14px;
+      padding: 14px 18px;
+      color: #fff;
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      outline: none;
+      cursor: pointer;
+    }
+
+    /* ==========================================================================
+       LAYOUT & NAVBAR
+       ========================================================================== */
+    .app-container {
+      max-width: 720px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 16px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 18px;
+      background: rgba(12, 9, 26, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--border-glow);
+      border-radius: 18px;
+      margin-bottom: 20px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      cursor: pointer;
+    }
+
+    .brand-logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 1.2rem;
+      color: #fff;
+      box-shadow: 0 0 12px var(--neon-purple-glow);
+    }
+
+    .brand-title {
+      font-size: 1.1rem;
+      font-weight: 900;
+      background: linear-gradient(to right, #fff, var(--neon-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .creator-tag {
+      font-size: 0.65rem;
+      color: var(--neon-cyan);
+      letter-spacing: 1px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+
+    .creator-tag:hover {
+      opacity: 0.8;
+    }
+
+    .nav-controls {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+    }
+
+    .icon-btn:hover {
+      border-color: var(--neon-purple);
+      color: var(--neon-purple);
+    }
+
+    /* Views Framework */
+    .view-section {
+      display: none;
+      flex-direction: column;
+      gap: 20px;
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .view-section.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       HOME VIEW
+       ========================================================================== */
+    .hero-banner {
+      position: relative;
+      height: 180px;
+      border-radius: 20px;
+      overflow: hidden;
+      display: flex;
+      align-items: flex-end;
+      padding: 20px;
+      border: 1px solid var(--border-glow);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+
+    .hero-img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.6) saturate(1.2);
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+      line-height: 1.1;
+      margin-bottom: 4px;
+      color: #fff;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+    }
+
+    .hero-sub {
+      font-size: 0.85rem;
+      color: var(--neon-cyan);
+      text-shadow: 0 0 8px var(--neon-cyan-glow);
+    }
+
+    .quick-stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .stat-card {
+      text-align: center;
+      padding: 14px 10px;
+    }
+
+    .stat-val {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      font-weight: 900;
+      color: var(--neon-purple);
+    }
+
+    .stat-lbl {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+
+    .menu-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .menu-btn {
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-card);
+      border: 1px solid var(--border-glow);
+      border-radius: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .menu-btn:hover {
+      background: var(--bg-card-hover);
+      transform: translateX(4px);
+      border-color: var(--neon-purple);
+    }
+
+    .menu-btn-left {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .menu-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      background: rgba(168, 85, 247, 0.15);
+      color: var(--neon-purple);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+    }
+
+    .menu-text-title {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .menu-text-desc {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    /* ==========================================================================
+       GAME SETUP VIEW
+       ========================================================================== */
+    .setup-section-title {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .chip-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip-btn {
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex: 1 1 calc(33.333% - 10px);
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .chip-btn:hover {
+      border-color: var(--neon-purple);
+    }
+
+    .chip-btn.active {
+      background: rgba(168, 85, 247, 0.2);
+      border-color: var(--neon-purple);
+      color: #fff;
+      box-shadow: 0 0 12px var(--neon-purple-glow);
+    }
+
+    /* ==========================================================================
+       GAMEPLAY VIEW
+       ========================================================================== */
+    .game-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .progress-bar-container {
+      width: 100%;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+
+    .timer-ring-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--neon-cyan);
+    }
+
+    .character-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .character-portrait-box {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 3px solid var(--neon-purple);
+      box-shadow: 0 0 20px var(--neon-purple-glow);
+      overflow: hidden;
+      position: relative;
+      background: #110d28;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .character-portrait-img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter 0.3s ease;
+    }
+
+    .character-portrait-img.silhouette {
+      filter: brightness(0) drop-shadow(0 0 10px var(--neon-purple-glow));
+    }
+
+    .character-portrait-placeholder {
+      font-size: 3.5rem;
+      color: var(--neon-purple);
+      opacity: 0.8;
+    }
+
+    .hints-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .hint-card {
+      background: rgba(10, 8, 22, 0.6);
+      border: 1px solid var(--border-light);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      transition: all 0.3s ease;
+    }
+
+    .hint-card.locked {
+      opacity: 0.4;
+      filter: blur(2px);
+      pointer-events: none;
+    }
+
+    .hint-number {
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 6px;
+      background: rgba(168, 85, 247, 0.2);
+      color: var(--neon-purple);
+      white-space: nowrap;
+    }
+
+    .hint-text {
+      color: var(--text-main);
+      line-height: 1.4;
+    }
+
+    /* Input & Autocomplete Suggestions */
+    .answer-box-wrapper {
+      position: relative;
+      width: 100%;
+    }
+
+    .autocomplete-list {
+      position: absolute;
+      bottom: 100%;
+      left: 0;
+      right: 0;
+      background: rgba(18, 14, 36, 0.98);
+      border: 1px solid var(--neon-purple);
+      border-radius: 12px;
+      max-height: 180px;
+      overflow-y: auto;
+      z-index: 100;
+      margin-bottom: 6px;
+      box-shadow: 0 -10px 25px rgba(0,0,0,0.8);
+      display: none;
+    }
+
+    .autocomplete-item {
+      padding: 10px 16px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .autocomplete-item:hover {
+      background: rgba(168, 85, 247, 0.2);
+      color: var(--neon-cyan);
+    }
+
+    .autocomplete-item-anime {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    /* Option choices grid fallback / mode */
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      width: 100%;
+      margin-top: 10px;
+    }
+
+    .option-btn {
+      padding: 12px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-light);
+      color: #fff;
+      font-size: 0.85rem;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .option-btn:hover {
+      background: rgba(168, 85, 247, 0.2);
+      border-color: var(--neon-purple);
+    }
+
+    /* Overlay feedback */
+    .feedback-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(8, 6, 18, 0.85);
+      backdrop-filter: blur(8px);
+      z-index: 200;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      text-align: center;
+      animation: zoomIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes zoomIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .feedback-card {
+      max-width: 380px;
+      width: 100%;
+      padding: 24px;
+      border-radius: 24px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .feedback-title {
+      font-size: 1.8rem;
+      font-weight: 900;
+    }
+
+    .feedback-char-img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 3px solid #fff;
+    }
+
+    /* ==========================================================================
+       RESULTS & LEADERBOARD & PROFILE VIEWS
+       ========================================================================== */
+    .score-summary-hero {
+      text-align: center;
+      padding: 30px 20px;
+    }
+
+    .final-score-val {
+      font-size: 3.2rem;
+      font-weight: 900;
+      line-height: 1;
+      margin: 10px 0;
+      background: linear-gradient(135deg, #fff, var(--neon-purple), var(--neon-cyan));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .history-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 0.85rem;
+    }
+
+    /* Footer */
+    footer {
+      margin-top: auto;
+      padding: 20px 0;
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .footer-credits {
+      font-family: var(--font-display);
+      font-weight: 700;
+      color: #fff;
+      letter-spacing: 1px;
+    }
+
+    .footer-insta {
+      color: var(--neon-pink);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .footer-insta:hover {
+      color: #f472b6;
+      text-shadow: 0 0 8px var(--neon-pink-glow);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 480px) {
+      .app-container {
+        padding: 12px;
+      }
+      .hero-title {
+        font-size: 1.4rem;
+      }
+      .final-score-val {
+        font-size: 2.5rem;
+      }
+      .stat-val {
+        font-size: 1.1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background Image & Gradient overlay -->
+  <img src="assets/background.png" alt="Anime Background" class="bg-banner" id="bgBannerImg">
+  <div class="bg-overlay"></div>
+
+  <div class="app-container">
+    
+    <!-- NAVBAR -->
+    <navbar>
+      <div class="nav-brand" id="btnNavHome">
+        <div class="brand-logo-icon">AQ</div>
+        <div>
+          <div class="brand-title">ANIME QUEST</div>
+          <a href="https://instagram.com/prince.das5566" target="_blank" class="creator-tag" onclick="event.stopPropagation()">
+            <span>BY PRINCE</span>
+            <span style="font-size:0.6rem; opacity:0.8;">@prince.das5566</span>
+          </a>
+        </div>
+      </div>
+      <div class="nav-controls">
+        <button class="icon-btn" id="btnSoundToggle" title="Toggle Sound">🔊</button>
+        <button class="icon-btn" id="btnProfile" title="Profile">👤</button>
+        <button class="icon-btn" id="btnSettings" title="Settings">⚙️</button>
+      </div>
+    </navbar>
+
+    <!-- ==========================================================================
+       VIEW: HOME
+       ========================================================================== -->
+    <div id="viewHome" class="view-section active">
+      <div class="hero-banner">
+        <img src="assets/background.png" class="hero-img" alt="Hero Banner">
+        <div class="hero-content">
+          <span class="badge badge-purple" style="margin-bottom: 6px;">Ultimate Anime Quiz</span>
+          <h1 class="hero-title">GUESS THE CHARACTER</h1>
+          <p class="hero-sub">Test your anime knowledge across 40+ iconic legends!</p>
+        </div>
+      </div>
+
+      <!-- Quick Player Stats -->
+      <div class="glass-card quick-stats-grid">
+        <div class="stat-card">
+          <div class="stat-val glow-text-purple" id="homeTotalScore">0</div>
+          <div class="stat-lbl">Total Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val glow-text-cyan" id="homeBestScore">0</div>
+          <div class="stat-lbl">Best Score</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-val glow-text-pink" id="homeAccuracy">0%</div>
+          <div class="stat-lbl">Accuracy</div>
+        </div>
+      </div>
+
+      <!-- Main Navigation Menu Buttons -->
+      <div class="menu-grid">
+        <div class="menu-btn" id="btnQuickPlay">
+          <div class="menu-btn-left">
+            <div class="menu-icon">⚡</div>
+            <div>
+              <div class="menu-text-title">QUICK PLAY</div>
+              <div class="menu-text-desc">10 Random Questions • All Anime</div>
+            </div>
+          </div>
+          <span class="glow-text-purple">▶</span>
+        </div>
+
+        <div class="menu-btn" id="btnCustomGame">
+          <div class="menu-btn-left">
+            <div class="menu-icon" style="color: var(--neon-cyan); background: rgba(6,182,212,0.15);">🎮</div>
+            <div>
+              <div class="menu-text-title">CUSTOM GAME</div>
+              <div class="menu-text-desc">Select Anime Filter, Difficulty & Length</div>
+            </div>
+          </div>
+          <span class="glow-text-cyan">⚙️</span>
+        </div>
+
+        <div class="menu-btn" id="btnLeaderboard">
+          <div class="menu-btn-left">
+            <div class="menu-icon" style="color: var(--neon-amber); background: rgba(245,158,11,0.15);">🏆</div>
+            <div>
+              <div class="menu-text-title">LEADERBOARD</div>
+              <div class="menu-text-desc">Check local high scores & records</div>
+            </div>
+          </div>
+          <span class="glow-text-pink">📊</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+       VIEW: CUSTOM GAME SETUP
+       ========================================================================== -->
+    <div id="viewSetup" class="view-section">
+      <div class="glass-card">
+        <h2 style="font-size: 1.3rem; margin-bottom: 20px;" class="glow-text-purple">GAME CONFIGURATION</h2>
+
+        <!-- Anime Filter -->
+        <div style="margin-bottom: 20px;">
+          <div class="setup-section-title">📺 Select Anime Series</div>
+          <select id="setupAnimeSelect" class="select-field">
+            <option value="ALL">All Anime Series (Max Pool)</option>
+            <!-- Populated dynamically via JS -->
+          </select>
+        </div>
+
+        <!-- Difficulty Selection -->
+        <div style="margin-bottom: 20px;">
+          <div class="setup-section-title">🎯 Difficulty Level</div>
+          <div class="chip-options" id="difficultyChips">
+            <button class="chip-btn active" data-diff="ALL">ALL</button>
+            <button class="chip-btn" data-diff="Easy">EASY (1.0x)</button>
+            <button class="chip-btn" data-diff="Medium">MED (1.25x)</button>
+            <button class="chip-btn" data-diff="Hard">HARD (1.5x)</button>
+          </div>
+        </div>
+
+        <!-- Question Count -->
+        <div style="margin-bottom: 24px;">
+          <div class="setup-section-title">🔢 Question Count</div>
+          <div class="chip-options" id="countChips">
+            <button class="chip-btn" data-count="5">5</button>
+            <button class="chip-btn active" data-count="10">10</button>
+            <button class="chip-btn" data-count="20">20</button>
+            <button class="chip-btn" data-count="50">50</button>
+            <button class="chip-btn" data-count="100">100</button>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="btnStartGame">
+          START QUEST 🚀
+        </button>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+       VIEW: GAMEPLAY
+       ========================================================================== -->
+    <div id="viewGameplay" class="view-section">
+      <!-- Top Status Bar -->
+      <div class="game-header-bar">
+        <div>
+          <span class="badge badge-purple" id="gameQuestionNum">Q 1/10</span>
+          <span class="badge badge-cyan" id="gameAnimeName" style="margin-left: 4px;">Naruto</span>
+        </div>
+        <div class="timer-ring-box">
+          <span>⏱️</span>
+          <span id="gameTimer">30s</span>
+        </div>
+        <div>
+          <span class="badge badge-amber" id="gameStreakBadge">🔥 0</span>
+          <span class="badge badge-pink" id="gameScoreBadge">0 pts</span>
+        </div>
+      </div>
+
+      <!-- Question Progress Bar -->
+      <div class="progress-bar-container">
+        <div class="progress-bar-fill" id="gameProgressBar"></div>
+      </div>
+
+      <!-- Character Card & Portrait -->
+      <div class="glass-card character-card">
+        <div class="character-portrait-box">
+          <img id="charPortraitImg" src="" alt="Character Silhouette" class="character-portrait-img silhouette">
+          <div id="charPortraitPlaceholder" class="character-portrait-placeholder" style="display:none;">❓</div>
+        </div>
+
+        <!-- Hints List -->
+        <div class="hints-container" id="hintsContainer">
+          <!-- Rendered dynamically -->
+        </div>
+
+        <!-- Unlock Next Hint Button -->
+        <button class="btn btn-secondary btn-block btn-sm" id="btnUnlockHint" style="margin-top: 14px;">
+          💡 Reveal Next Hint (-20 pts)
+        </button>
+      </div>
+
+      <!-- Guessing Input Area -->
+      <div class="glass-card" style="padding: 16px;">
+        <div class="answer-box-wrapper">
+          <!-- Autocomplete Dropdown List -->
+          <div class="autocomplete-list" id="autocompleteList"></div>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="guessInput" class="input-field" placeholder="Type character name..." autocomplete="off">
+            <button class="btn btn-primary" id="btnSubmitGuess" style="padding: 0 20px;">GUESS</button>
+          </div>
+        </div>
+
+        <!-- Quick Choices Grid (4 multiple choices) -->
+        <div style="margin-top: 12px; font-size: 0.75rem; color: var(--text-muted); text-align: center;">OR SELECT FROM OPTIONS:</div>
+        <div class="options-grid" id="optionsGrid">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+       VIEW: RESULTS
+       ========================================================================== -->
+    <div id="viewResults" class="view-section">
+      <div class="glass-card score-summary-hero">
+        <span class="badge badge-purple">QUEST COMPLETED</span>
+        <div class="final-score-val" id="resFinalScore">0</div>
+        <div style="color: var(--text-muted); font-size: 0.9rem;">TOTAL SCORE EARNED</div>
+
+        <div style="display: flex; justify-content: space-around; margin-top: 20px;">
+          <div>
+            <div class="glow-text-cyan" style="font-size: 1.3rem; font-weight: 700;" id="resCorrectCount">0/0</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted);">ACCURACY</div>
+          </div>
+          <div>
+            <div class="glow-text-pink" style="font-size: 1.3rem; font-weight: 700;" id="resBestStreak">0</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted);">MAX STREAK</div>
+          </div>
+          <div>
+            <div class="glow-text-purple" style="font-size: 1.3rem; font-weight: 700;" id="resTimeBonus">+0</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted);">SPEED BONUS</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Answer Breakdown -->
+      <div class="glass-card">
+        <h3 style="font-size: 1rem; margin-bottom: 12px;" class="glow-text-cyan">QUEST BREAKDOWN</h3>
+        <div class="history-list" id="resBreakdownList">
+          <!-- Dynamic Items -->
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-secondary btn-block" id="btnResultHome">HOME</button>
+        <button class="btn btn-primary btn-block" id="btnResultPlayAgain">PLAY AGAIN 🔄</button>
+      </div>
+    </div>
+
+    <!-- ==========================================================================
+       VIEW: LEADERBOARD
+       ========================================================================== -->
+    <div id="viewLeaderboard" class="view-section">
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h2 style="font-size: 1.2rem;" class="glow-text-amber">🏆 LOCAL LEADERBOARD</h2>
+          <button class="btn btn-secondary btn-sm" id="btnClearLeaderboard">Clear</button>
+        </div>
+        <div class="history-list" id="leaderboardList">
+          <!-- Populated dynamically -->
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-block" id="btnLeaderboardBack">BACK TO MENU</button>
+    </div>
+
+    <!-- ==========================================================================
+       VIEW: PROFILE & SETTINGS
+       ========================================================================== -->
+    <div id="viewProfile" class="view-section">
+      <div class="glass-card">
+        <h2 style="font-size: 1.2rem; margin-bottom: 16px;" class="glow-text-purple">PLAYER PROFILE</h2>
+        
+        <div style="margin-bottom: 16px;">
+          <label style="font-size: 0.8rem; color: var(--text-muted); display: block; margin-bottom: 6px;">PLAYER NAME</label>
+          <input type="text" id="profileNameInput" class="input-field" maxlength="15" value="Shinobi">
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px;">
+          <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 1.2rem; font-weight: 700; color: var(--neon-purple);" id="profGamesPlayed">0</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted);">GAMES PLAYED</div>
+          </div>
+          <div style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 12px; text-align: center;">
+            <div style="font-size: 1.2rem; font-weight: 700; color: var(--neon-cyan);" id="profTotalCorrect">0</div>
+            <div style="font-size: 0.7rem; color: var(--text-muted);">TOTAL CORRECT</div>
+          </div>
+        </div>
+
+        <button class="btn btn-primary btn-block" id="btnSaveProfile">SAVE PROFILE</button>
+      </div>
+
+      <div class="glass-card">
+        <h3 style="font-size: 1rem; margin-bottom: 12px;" class="glow-text-pink">SETTINGS</h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <span>Sound Effects</span>
+          <button class="btn btn-secondary btn-sm" id="btnSettingsSoundToggle">ENABLED 🔊</button>
+        </div>
+        <button class="btn btn-accent btn-block btn-sm" id="btnResetData">RESET ALL PROGRESS Data ⚠️</button>
+      </div>
+
+      <button class="btn btn-secondary btn-block" id="btnProfileBack">BACK</button>
+    </div>
+
+    <!-- ==========================================================================
+       FEEDBACK OVERLAY (MODAL)
+       ========================================================================== -->
+    <div class="feedback-overlay" id="feedbackOverlay">
+      <div class="glass-card feedback-card" id="feedbackCard">
+        <div class="feedback-title" id="feedbackTitle">CORRECT!</div>
+        <img id="feedbackImg" class="feedback-char-img" src="" alt="Answer Image">
+        <div id="feedbackCharName" style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 700;"></div>
+        <div id="feedbackAnimeName" style="font-size: 0.85rem; color: var(--neon-cyan);"></div>
+        <div id="feedbackPoints" style="font-size: 1rem; font-weight: 700; color: var(--neon-amber);">+100 Points</div>
+        <button class="btn btn-primary btn-block" id="btnNextQuestion">NEXT QUESTION ▶</button>
+      </div>
+    </div>
+
+    <!-- FOOTER CREDITS -->
+    <footer>
+      <div class="footer-credits">CREATED BY PRINCE</div>
+      <a href="https://instagram.com/prince.das5566" target="_blank" class="footer-insta">
+        <span>📸 Instagram: @prince.das5566</span>
+      </a>
+    </footer>
+
+  </div>
+
+  <!-- ==========================================================================
+     JAVASCRIPT GAME LOGIC
+     ========================================================================== -->
+  <script>
+    /* ==========================================================================
+       ANIME CHARACTER DATABASE
+       ========================================================================== */
+    const ANIME_DATABASE = [
+      {
+        id: "gojo",
+        name: "Satoru Gojo",
+        aliases: ["Gojo", "Satoru", "Gojo Sensei"],
+        anime: "Jujutsu Kaisen",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=gojo", // Dynamic high-tech avatar or fallback
+        hints: [
+          "Male teacher with iconic white hair and a dark blindfold.",
+          "Special Grade Sorcerer known as the strongest of modern times.",
+          "Wields the Limitless technique and the Six Eyes.",
+          "Famous for his Domain Expansion: Unlimited Void."
+        ]
+      },
+      {
+        id: "naruto",
+        name: "Naruto Uzumaki",
+        aliases: ["Naruto", "Uzumaki Naruto", "7th Hokage"],
+        anime: "Naruto",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=naruto",
+        hints: [
+          "Spiky yellow hair, orange tracksuit, and whisper whiskers on cheeks.",
+          "Ninja from Hidden Leaf Village who dreams of becoming Hokage.",
+          "Jinchuriki housing the Nine-Tailed Fox (Kurama).",
+          "Signature jutsus: Shadow Clone Jutsu and Rasengan."
+        ]
+      },
+      {
+        id: "luffy",
+        name: "Monkey D. Luffy",
+        aliases: ["Luffy", "Straw Hat Luffy", "Monkey D Luffy"],
+        anime: "One Piece",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=luffy",
+        hints: [
+          "Always wears a straw hat and red vest with a scar under his left eye.",
+          "Captain of the Straw Hat Pirates aiming to become King of the Pirates.",
+          "Ate the Gum-Gum Fruit (Hito Hito no Mi, Model: Nika) making his body elastic.",
+          "Punches enemies with move: Gomu Gomu no Pistol!"
+        ]
+      },
+      {
+        id: "eren",
+        name: "Eren Yeager",
+        aliases: ["Eren", "Eren Jaeger"],
+        anime: "Attack on Titan",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=eren",
+        hints: [
+          "Male scout member from Shiganshina district.",
+          "Vowed to eradicate all Titans after his mother was eaten.",
+          "Inherited the Attack Titan and Founding Titan.",
+          "Triggered the global apocalyptic event known as 'The Rumbling'."
+        ]
+      },
+      {
+        id: "tanjiro",
+        name: "Tanjiro Kamado",
+        aliases: ["Tanjiro", "Kamado Tanjiro"],
+        anime: "Demon Slayer",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=tanjiro",
+        hints: [
+          "Black and green checkered haori with hanafuda earrings.",
+          "Demon slayer fighting to turn his sister Nezuko back into a human.",
+          "Master of Water Breathing and Sun Breathing (Hinokami Kagura).",
+          "Forehead scar caused by protecting his brother from a boiling teapot."
+        ]
+      },
+      {
+        id: "light",
+        name: "Light Yagami",
+        aliases: ["Light", "Kira", "Light Yagami"],
+        anime: "Death Note",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=light",
+        hints: [
+          "Genius high school student who finds a supernatural notebook.",
+          "Operates under the alias 'Kira' to create a new ideal world.",
+          "Accompanied by the Shinigami named Ryuk who loves apples.",
+          "Famous quote: 'I'll take a potato chip... AND EAT IT!'"
+        ]
+      },
+      {
+        id: "denji",
+        name: "Denji",
+        aliases: ["Chainsaw Man"],
+        anime: "Chainsaw Man",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=denji",
+        hints: [
+          "Blonde devil hunter with simple desires (like eating jam on toast).",
+          "Merged with his devil dog companion Pochita.",
+          "Pulls a cord in his chest to sprout chainsaws from his head and arms.",
+          "Works for Makima in Public Safety Special Division 4."
+        ]
+      },
+      {
+        id: "goku",
+        name: "Son Goku",
+        aliases: ["Goku", "Son Goku", "Kakarot"],
+        anime: "Dragon Ball",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=goku",
+        hints: [
+          "Saiyan warrior raised on Earth with wild black spiky hair.",
+          "Loves fighting strong opponents and eating massive meals.",
+          "Transforms into Super Saiyan, Super Saiyan Blue, and Ultra Instinct.",
+          "Signature ki beam attack: Kamehameha!"
+        ]
+      },
+      {
+        id: "ichigo",
+        name: "Ichigo Kurosaki",
+        aliases: ["Ichigo", "Kurosaki Ichigo"],
+        anime: "Bleach",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=ichigo",
+        hints: [
+          "Orange-haired teenager who can see ghosts.",
+          "Obtained Soul Reaper powers from Rukia Kuchiki.",
+          "Wields the oversized Zanpakuto sword named Zangetsu.",
+          "Signature attack release: Getsuga Tensho!"
+        ]
+      },
+      {
+        id: "deku",
+        name: "Izuku Midoriya",
+        aliases: ["Deku", "Midoriya", "Izuku"],
+        anime: "My Hero Academia",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=deku",
+        hints: [
+          "Green hair and freckles, born Quirkless in a hero society.",
+          "Inherited the legendary Quirk 'One For All' from All Might.",
+          "Attends U.A. High School in Class 1-A.",
+          "Uses Smash attacks like Detroit Smash and Delaware Smash."
+        ]
+      },
+      {
+        id: "killua",
+        name: "Killua Zoldyck",
+        aliases: ["Killua", "Killua Zoldyck"],
+        anime: "Hunter × Hunter",
+        difficulty: "Medium",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=killua",
+        hints: [
+          "Silver-haired kid from an infamous family of elite assassins.",
+          "Best friend of Gon Freecss.",
+          "Transmuter Nen user who converts aura into electricity.",
+          "Fights with yo-yos and speed mode called Godspeed."
+        ]
+      },
+      {
+        id: "levi",
+        name: "Levi Ackerman",
+        aliases: ["Levi", "Captain Levi", "Levi Ackerman"],
+        anime: "Attack on Titan",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=levi",
+        hints: [
+          "Short squad captain known as Humanity's Strongest Soldier.",
+          "Obsessed with cleanliness and holds teacups from the top rim.",
+          "Ackerman clan member who spins like a blade cyclone.",
+          "Shredded the Beast Titan in single combat."
+        ]
+      },
+      {
+        id: "sukuna",
+        name: "Ryomen Sukuna",
+        aliases: ["Sukuna", "Ryomen Sukuna", "King of Curses"],
+        anime: "Jujutsu Kaisen",
+        difficulty: "Medium",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=sukuna",
+        hints: [
+          "Ancient King of Curses incarnated inside Yuji Itadori.",
+          "Has 4 arms and 2 faces in his original form.",
+          "Uses slashing techniques Cleave and Dismantle.",
+          "Domain Expansion: Malevolent Shrine."
+        ]
+      },
+      {
+        id: "zoro",
+        name: "Roronoa Zoro",
+        aliases: ["Zoro", "Roronoa Zoro", "Pirate Hunter Zoro"],
+        anime: "One Piece",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=zoro",
+        hints: [
+          "Green hair, eye scar, and notoriously terrible sense of direction.",
+          "First mate of Straw Hat Pirates who aims to be world's greatest swordsman.",
+          "Master of Three-Sword Style (Santoryu), carrying one sword in his mouth.",
+          "Famous scene: 'Nothing happened!'"
+        ]
+      },
+      {
+        id: "kakashi",
+        name: "Kakashi Hatake",
+        aliases: ["Kakashi", "Copy Ninja Kakashi"],
+        anime: "Naruto",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=kakashi",
+        hints: [
+          "Silver hair, mouth mask, and forehead protector covering left eye.",
+          "Leader of Team 7 and later the 6th Hokage.",
+          "Known as Copy Ninja because of his gifted Sharingan eye.",
+          "Loves reading 'Make-Out Paradise' novels and created Lightning Blade (Chidori)."
+        ]
+      },
+      {
+        id: "nezuko",
+        name: "Nezuko Kamado",
+        aliases: ["Nezuko", "Kamado Nezuko"],
+        anime: "Demon Slayer",
+        difficulty: "Medium",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=nezuko",
+        hints: [
+          "Girl wearing a pink kimono and a bamboo muzzle.",
+          "Turned into a demon by Muzan Kibutsuji but protects humans.",
+          "Can shrink her body to fit inside a wooden box carried by her brother.",
+          "Uses Blood Demon Art: Exploding Blood."
+        ]
+      },
+      {
+        id: "lawliet",
+        name: "L Lawliet",
+        aliases: ["L", "Ryuzaki"],
+        anime: "Death Note",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=lawliet",
+        hints: [
+          "World's greatest detective with messy dark hair and dark eye circles.",
+          "Crouches on chairs and holds objects with only fingertips.",
+          "Eats sweets, cake, and sugar cubes continuously.",
+          "Engages in a legendary cat-and-mouse mental duel against Light Yagami."
+        ]
+      },
+      {
+        id: "makima",
+        name: "Makima",
+        aliases: ["Control Devil"],
+        anime: "Chainsaw Man",
+        difficulty: "Medium",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=makima",
+        hints: [
+          "Red hair in a braid with ringed golden eyes.",
+          "High-ranking Public Safety officer who treats Denji like a pet.",
+          "Secretly the Control Devil.",
+          "Famous one-word command: 'Bang.'"
+        ]
+      },
+      {
+        id: "jinwoo",
+        name: "Sung Jin-woo",
+        aliases: ["Jinwoo", "Sung Jin Woo", "Shadow Monarch"],
+        anime: "Solo Leveling",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=jinwoo",
+        hints: [
+          "Started as the 'World's Weakest E-Rank Hunter'.",
+          "Gained the unique ability to Level Up after surviving a double dungeon.",
+          "Became the Shadow Monarch with an army of shadow soldiers.",
+          "Famous command: 'ARISE.'"
+        ]
+      },
+      {
+        id: "saitama",
+        name: "Saitama",
+        aliases: ["Caped Baldy", "One Punch Man"],
+        anime: "One Punch Man",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=saitama",
+        hints: [
+          "Completely bald hero in a yellow suit and red gloves.",
+          "Became overpowered after 100 pushups, situps, squats and 10km run daily.",
+          "Defeats every monster with a single punch and gets bored easily.",
+          "Cares more about grocery store discount sales than world threats."
+        ]
+      },
+      {
+        id: "edward",
+        name: "Edward Elric",
+        aliases: ["Ed", "Fullmetal Alchemist", "Edward"],
+        anime: "Fullmetal Alchemist",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=edward",
+        hints: [
+          "State Alchemist with a blonde braid, red cloak, and mechanical Automail limbs.",
+          "Hates milk and gets furious whenever someone calls him short.",
+          "Transmutes alchemy without drawing a Transmutation Circle.",
+          "Searching for the Philosopher's Stone to restore his brother Alphonse's body."
+        ]
+      },
+      {
+        id: "asta",
+        name: "Asta",
+        aliases: ["Asta Staria"],
+        anime: "Black Clover",
+        difficulty: "Medium",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=asta",
+        hints: [
+          "Loud orphan born completely without Mana in a magical world.",
+          "Member of the Black Bulls squad aiming to become Wizard King.",
+          "Received a five-leaf clover grimoire harboring Anti-Magic devil Liebe.",
+          "Wields giant heavy Demon-Slayer swords."
+        ]
+      },
+      {
+        id: "hinata",
+        name: "Shoyo Hinata",
+        aliases: ["Hinata", "Shoyo"],
+        anime: "Haikyuu!!",
+        difficulty: "Medium",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=hinata",
+        hints: [
+          "Short orange-haired middle blocker for Karasuno High.",
+          "Nicknamed 'The Greatest Decoy' due to his incredible jumping power.",
+          "Partners with setter Tobio Kageyama for a freak-fast spike attack.",
+          "Inspired to play volleyball by seeing 'The Little Giant'."
+        ]
+      },
+      {
+        id: "isagi",
+        name: "Yoichi Isagi",
+        aliases: ["Isagi"],
+        anime: "Blue Lock",
+        difficulty: "Medium",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=isagi",
+        hints: [
+          "Forward striker aiming to become Japan's ultimate egoist striker.",
+          "Has spatial awareness vision that lets him see the entire field like a 3D board.",
+          "Signature weapon: Direct Volley shot.",
+          "Evolves by 'devouring' rival players on the pitch."
+        ]
+      },
+      {
+        id: "loid",
+        name: "Loid Forger",
+        aliases: ["Twilight", "Loid"],
+        anime: "Spy × Family",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=loid",
+        hints: [
+          "Elite Westalis spy operating under codename 'Twilight'.",
+          "Created a fake family for Operation Strix.",
+          "Posing as a psychiatrist with a fake daughter and wife.",
+          "Handsome master of disguise."
+        ]
+      },
+      {
+        id: "anya",
+        name: "Anya Forger",
+        aliases: ["Anya"],
+        anime: "Spy × Family",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=anya",
+        hints: [
+          "Little girl with pink hair and horn-like hair ornaments.",
+          "Telepathic orphan (Test Subject 007) who reads minds.",
+          "Loves peanuts, watching Spy Wars, and hates studying.",
+          "Famous smirk expression: 'Waku Waku!'"
+        ]
+      },
+      {
+        id: "mikey",
+        name: "Manjiro Sano",
+        aliases: ["Mikey", "Manjiro Sano"],
+        anime: "Tokyo Revengers",
+        difficulty: "Medium",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=mikey",
+        hints: [
+          "Leader and founding member of Tokyo Manji Gang (Toman).",
+          "Blonde hair, short stature, but possesses lethal kick strength.",
+          "Known as 'Invincible Mikey'.",
+          "Loves dorayaki and flag-topped kid meals."
+        ]
+      },
+      {
+        id: "itachi",
+        name: "Itachi Uchiha",
+        aliases: ["Itachi"],
+        anime: "Naruto",
+        difficulty: "Easy",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=itachi",
+        hints: [
+          "Rogue ninja from the Akatsuki clad in black red-cloud cloak.",
+          "Older brother of Sasuke Uchiha.",
+          "Anbu prodigy who massacred his own clan to prevent civil war.",
+          "Master of Mangekyo Sharingan, Tsukuyomi, and Amaterasu black flames."
+        ]
+      },
+      {
+        id: "meruem",
+        name: "Meruem",
+        aliases: ["Chimera Ant King"],
+        anime: "Hunter × Hunter",
+        difficulty: "Hard",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=meruem",
+        hints: [
+          "Powerful green tail-bearing Chimera Ant King.",
+          "Born as the ultimate biological predator.",
+          "Formed a deep emotional bond playing Gungi board game with blind girl Komugi.",
+          "Fought Chairman Netero in an epic underground battle."
+        ]
+      },
+      {
+        id: "aizen",
+        name: "Sosuke Aizen",
+        aliases: ["Aizen"],
+        anime: "Bleach",
+        difficulty: "Medium",
+        image: "https://api.dicebear.com/7.x/bottts/svg?seed=aizen",
+        hints: [
+          "Former 5th Division Captain who slicked back his hair after betraying Soul Society.",
+          "Main antagonist seeking the Hogyoku to transcend soul reapers.",
+          "Zanpakuto Kyoka Suigetsu controls complete hypnosis.",
+          "Famous line: 'Since when were you under the impression that...?'"
+        ]
+      }
+    ];
+
+    /* ==========================================================================
+       SYNTHETIC SOUND FX ENGINE (WEB AUDIO API - NO EXTERNAL ASSETS REQUIRED)
+       ========================================================================== */
+    class SoundEngine {
+      constructor() {
+        this.ctx = null;
+        this.muted = false;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (AudioContext) this.ctx = new AudioContext();
+        }
+      }
+
+      playTone(freq, type, duration, delay = 0) {
+        if (this.muted || !this.ctx) return;
+        setTimeout(() => {
+          try {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+            gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+            osc.start();
+            osc.stop(this.ctx.currentTime + duration);
+          } catch(e) {}
+        }, delay);
+      }
+
+      playCorrect() {
+        this.init();
+        this.playTone(523.25, 'sine', 0.15, 0);   // C5
+        this.playTone(659.25, 'sine', 0.15, 100); // E5
+        this.playTone(783.99, 'sine', 0.25, 200); // G5
+      }
+
+      playWrong() {
+        this.init();
+        this.playTone(220, 'sawtooth', 0.2, 0);   // A3
+        this.playTone(180, 'sawtooth', 0.3, 150);
+      }
+
+      playHint() {
+        this.init();
+        this.playTone(880, 'sine', 0.1, 0);
+        this.playTone(1200, 'sine', 0.15, 80);
+      }
+
+      playStreak() {
+        this.init();
+        this.playTone(440, 'triangle', 0.1, 0);
+        this.playTone(554, 'triangle', 0.1, 80);
+        this.playTone(659, 'triangle', 0.1, 160);
+        this.playTone(880, 'triangle', 0.3, 240);
+      }
+    }
+
+    const sounds = new SoundEngine();
+
+    /* ==========================================================================
+       GAME ENGINE & STATE MANAGEMENT
+       ========================================================================== */
+    const defaultState = {
+      playerName: "Shinobi",
+      totalScore: 0,
+      bestScore: 0,
+      gamesPlayed: 0,
+      totalCorrect: 0,
+      totalQuestionsPlayed: 0,
+      bestStreak: 0,
+      soundEnabled: true,
+      leaderboard: []
+    };
+
+    let userStats = JSON.parse(localStorage.getItem('animeQuest_userStats')) || defaultState;
+
+    function saveStats() {
+      localStorage.setItem('animeQuest_userStats', JSON.stringify(userStats));
+    }
+
+    // Current Active Session State
+    let session = {
+      animeFilter: "ALL",
+      difficulty: "ALL",
+      totalQuestions: 10,
+      questionsPool: [],
+      currentIndex: 0,
+      currentQuestion: null,
+      unlockedHintsCount: 1, // Start with Hint 1
+      currentScore: 0,
+      currentStreak: 0,
+      maxStreakInSession: 0,
+      timerInterval: null,
+      timeLeft: 30,
+      breakdown: []
+    };
+
+    /* DOM ELEMENTS */
+    const views = {
+      home: document.getElementById('viewHome'),
+      setup: document.getElementById('viewSetup'),
+      gameplay: document.getElementById('viewGameplay'),
+      results: document.getElementById('viewResults'),
+      leaderboard: document.getElementById('viewLeaderboard'),
+      profile: document.getElementById('viewProfile')
+    };
+
+    function showView(viewKey) {
+      Object.keys(views).forEach(k => {
+        views[k].classList.remove('active');
+      });
+      views[viewKey].classList.add('active');
+      window.scrollTo(0, 0);
+    }
+
+    /* ==========================================================================
+       INITIALIZATION & EVENT LISTENERS
+       ========================================================================== */
+    function initApp() {
+      populateAnimeDropdown();
+      updateProfileUI();
+      renderHomeStats();
+
+      // Top Nav Buttons
+      document.getElementById('btnNavHome').addEventListener('click', () => showView('home'));
+      
+      const toggleSoundBtn = document.getElementById('btnSoundToggle');
+      toggleSoundBtn.addEventListener('click', () => {
+        sounds.muted = !sounds.muted;
+        userStats.soundEnabled = !sounds.muted;
+        saveStats();
+        toggleSoundBtn.textContent = sounds.muted ? '🔇' : '🔊';
+        document.getElementById('btnSettingsSoundToggle').textContent = sounds.muted ? 'DISABLED 🔇' : 'ENABLED 🔊';
+      });
+
+      document.getElementById('btnProfile').addEventListener('click', () => {
+        updateProfileUI();
+        showView('profile');
+      });
+
+      document.getElementById('btnSettings').addEventListener('click', () => {
+        updateProfileUI();
+        showView('profile');
+      });
+
+      // Home View Buttons
+      document.getElementById('btnQuickPlay').addEventListener('click', () => {
+        session.animeFilter = "ALL";
+        session.difficulty = "ALL";
+        session.totalQuestions = 10;
+        startNewGameSession();
+      });
+
+      document.getElementById('btnCustomGame').addEventListener('click', () => {
+        showView('setup');
+      });
+
+      document.getElementById('btnLeaderboard').addEventListener('click', () => {
+        renderLeaderboard();
+        showView('leaderboard');
+      });
+
+      // Setup Controls
+      setupChipGroup('difficultyChips', (val) => session.difficulty = val);
+      setupChipGroup('countChips', (val) => session.totalQuestions = parseInt(val));
+
+      document.getElementById('btnStartGame').addEventListener('click', () => {
+        session.animeFilter = document.getElementById('setupAnimeSelect').value;
+        startNewGameSession();
+      });
+
+      // Gameplay Input & AutoComplete
+      const guessInput = document.getElementById('guessInput');
+      guessInput.addEventListener('input', handleAutocomplete);
+      
+      document.getElementById('btnSubmitGuess').addEventListener('click', submitGuess);
+      guessInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') submitGuess();
+      });
+
+      document.getElementById('btnUnlockHint').addEventListener('click', unlockNextHint);
+
+      // Results screen actions
+      document.getElementById('btnResultHome').addEventListener('click', () => showView('home'));
+      document.getElementById('btnResultPlayAgain').addEventListener('click', () => startNewGameSession());
+
+      // Profile & Settings
+      document.getElementById('btnSaveProfile').addEventListener('click', () => {
+        const newName = document.getElementById('profileNameInput').value.trim();
+        if (newName) {
+          userStats.playerName = newName;
+          saveStats();
+          alert('Profile saved successfully!');
+          renderHomeStats();
+        }
+      });
+
+      document.getElementById('btnProfileBack').addEventListener('click', () => showView('home'));
+      document.getElementById('btnLeaderboardBack').addEventListener('click', () => showView('home'));
+
+      document.getElementById('btnClearLeaderboard').addEventListener('click', () => {
+        if (confirm("Clear local leaderboard records?")) {
+          userStats.leaderboard = [];
+          saveStats();
+          renderLeaderboard();
+        }
+      });
+
+      document.getElementById('btnResetData').addEventListener('click', () => {
+        if (confirm("Are you sure you want to reset all game data and scores?")) {
+          userStats = JSON.parse(JSON.stringify(defaultState));
+          saveStats();
+          renderHomeStats();
+          updateProfileUI();
+          alert("All progress reset.");
+        }
+      });
+
+      document.getElementById('btnSettingsSoundToggle').addEventListener('click', () => {
+        sounds.muted = !sounds.muted;
+        userStats.soundEnabled = !sounds.muted;
+        saveStats();
+        toggleSoundBtn.textContent = sounds.muted ? '🔇' : '🔊';
+        document.getElementById('btnSettingsSoundToggle').textContent = sounds.muted ? 'DISABLED 🔇' : 'ENABLED 🔊';
+      });
+
+      document.getElementById('btnNextQuestion').addEventListener('click', () => {
+        document.getElementById('feedbackOverlay').style.display = 'none';
+        session.currentIndex++;
+        if (session.currentIndex < session.questionsPool.length) {
+          loadQuestion();
+        } else {
+          finishGameSession();
+        }
+      });
+    }
+
+    function setupChipGroup(groupId, onChange) {
+      const group = document.getElementById(groupId);
+      const buttons = group.querySelectorAll('.chip-btn');
+      buttons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          buttons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          const val = btn.dataset.diff || btn.dataset.count;
+          onChange(val);
+        });
+      });
+    }
+
+    function populateAnimeDropdown() {
+      const select = document.getElementById('setupAnimeSelect');
+      const animeList = [...new Set(ANIME_DATABASE.map(c => c.anime))].sort();
+      animeList.forEach(anime => {
+        const opt = document.createElement('option');
+        opt.value = anime;
+        opt.textContent = anime;
+        select.appendChild(opt);
+      });
+    }
+
+    function renderHomeStats() {
+      document.getElementById('homeTotalScore').textContent = userStats.totalScore;
+      document.getElementById('homeBestScore').textContent = userStats.bestScore;
+      const acc = userStats.totalQuestionsPlayed > 0 
+        ? Math.round((userStats.totalCorrect / userStats.totalQuestionsPlayed) * 100) 
+        : 0;
+      document.getElementById('homeAccuracy').textContent = acc + '%';
+    }
+
+    function updateProfileUI() {
+      document.getElementById('profileNameInput').value = userStats.playerName;
+      document.getElementById('profGamesPlayed').textContent = userStats.gamesPlayed;
+      document.getElementById('profTotalCorrect').textContent = userStats.totalCorrect;
+    }
+
+    /* ==========================================================================
+       GAMEPLAY LOGIC
+       ========================================================================== */
+    function startNewGameSession() {
+      let filtered = ANIME_DATABASE.filter(char => {
+        const matchAnime = session.animeFilter === "ALL" || char.anime === session.animeFilter;
+        const matchDiff = session.difficulty === "ALL" || char.difficulty === session.difficulty;
+        return matchAnime && matchDiff;
+      });
+
+      if (filtered.length === 0) {
+        alert("No characters found with selected filters! Defaulting to all series.");
+        filtered = [...ANIME_DATABASE];
+      }
+
+      // Shuffle array (Fisher-Yates)
+      const shuffled = [...filtered].sort(() => 0.5 - Math.random());
+      session.questionsPool = shuffled.slice(0, Math.min(session.totalQuestions, shuffled.length));
+      session.currentIndex = 0;
+      session.currentScore = 0;
+      session.currentStreak = 0;
+      session.maxStreakInSession = 0;
+      session.breakdown = [];
+
+      showView('gameplay');
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      clearInterval(session.timerInterval);
+      session.unlockedHintsCount = 1; // Always start with 1 hint
+      session.timeLeft = 30;
+      session.currentQuestion = session.questionsPool[session.currentIndex];
+
+      // Update Top HUD
+      document.getElementById('gameQuestionNum').textContent = `Q ${session.currentIndex + 1}/${session.questionsPool.length}`;
+      document.getElementById('gameAnimeName').textContent = session.currentQuestion.anime;
+      document.getElementById('gameStreakBadge').textContent = `🔥 ${session.currentStreak}`;
+      document.getElementById('gameScoreBadge').textContent = `${session.currentScore} pts`;
+
+      const progressPct = ((session.currentIndex) / session.questionsPool.length) * 100;
+      document.getElementById('gameProgressBar').style.width = `${progressPct}%`;
+
+      // Reset Image & Silhouette
+      const imgElem = document.getElementById('charPortraitImg');
+      const placeholder = document.getElementById('charPortraitPlaceholder');
+
+      if (session.currentQuestion.image) {
+        imgElem.src = session.currentQuestion.image;
+        imgElem.classList.add('silhouette');
+        imgElem.style.display = 'block';
+        placeholder.style.display = 'none';
+      } else {
+        imgElem.style.display = 'none';
+        placeholder.style.display = 'block';
+      }
+
+      // Render Hints
+      renderHintsUI();
+
+      // Clear Inputs
+      document.getElementById('guessInput').value = '';
+      document.getElementById('autocompleteList').style.display = 'none';
+
+      // Render 4 Multiple Choice Options
+      renderOptionsGrid();
+
+      // Start Countdown Timer
+      updateTimerDisplay();
+      session.timerInterval = setInterval(() => {
+        session.timeLeft--;
+        updateTimerDisplay();
+        if (session.timeLeft <= 0) {
+          clearInterval(session.timerInterval);
+          handleTimeOut();
+        }
+      }, 1000);
+    }
+
+    function updateTimerDisplay() {
+      const timerElem = document.getElementById('gameTimer');
+      timerElem.textContent = `${session.timeLeft}s`;
+      if (session.timeLeft <= 5) {
+        timerElem.style.color = 'var(--neon-pink)';
+      } else {
+        timerElem.style.color = 'var(--neon-cyan)';
+      }
+    }
+
+    function renderHintsUI() {
+      const container = document.getElementById('hintsContainer');
+      container.innerHTML = '';
+
+      session.currentQuestion.hints.forEach((hintText, idx) => {
+        const isUnlocked = idx < session.unlockedHintsCount;
+        const card = document.createElement('div');
+        card.className = `hint-card ${isUnlocked ? '' : 'locked'}`;
+
+        card.innerHTML = `
+          <span class="hint-number">HINT ${idx + 1}</span>
+          <div class="hint-text">${isUnlocked ? hintText : '🔒 Locked Hint'}</div>
+        `;
+        container.appendChild(card);
+      });
+
+      const unlockBtn = document.getElementById('btnUnlockHint');
+      if (session.unlockedHintsCount >= session.currentQuestion.hints.length) {
+        unlockBtn.style.display = 'none';
+      } else {
+        unlockBtn.style.display = 'block';
+        const nextCost = (session.unlockedHintsCount) * 20;
+        unlockBtn.textContent = `💡 Reveal Hint ${session.unlockedHintsCount + 1} (-20 pts)`;
+      }
+    }
+
+    function unlockNextHint() {
+      if (session.unlockedHintsCount < session.currentQuestion.hints.length) {
+        session.unlockedHintsCount++;
+        sounds.playHint();
+        renderHintsUI();
+      }
+    }
+
+    function renderOptionsGrid() {
+      const grid = document.getElementById('optionsGrid');
+      grid.innerHTML = '';
+
+      // Generate 3 random wrong distractors
+      const distractors = ANIME_DATABASE
+        .filter(c => c.name !== session.currentQuestion.name)
+        .sort(() => 0.5 - Math.random())
+        .slice(0, 3)
+        .map(c => c.name);
+
+      const options = [...distractors, session.currentQuestion.name].sort(() => 0.5 - Math.random());
+
+      options.forEach(optName => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.textContent = optName;
+        btn.addEventListener('click', () => {
+          document.getElementById('guessInput').value = optName;
+          submitGuess();
+        });
+        grid.appendChild(btn);
+      });
+    }
+
+    function handleAutocomplete() {
+      const inputVal = document.getElementById('guessInput').value.trim().toLowerCase();
+      const listElem = document.getElementById('autocompleteList');
+
+      if (!inputVal || inputVal.length < 1) {
+        listElem.style.display = 'none';
+        return;
+      }
+
+      const matches = ANIME_DATABASE.filter(c => 
+        c.name.toLowerCase().includes(inputVal) || 
+        c.anime.toLowerCase().includes(inputVal) ||
+        c.aliases.some(a => a.toLowerCase().includes(inputVal))
+      ).slice(0, 5);
+
+      if (matches.length === 0) {
+        listElem.style.display = 'none';
+        return;
+      }
+
+      listElem.innerHTML = '';
+      matches.forEach(m => {
+        const item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.innerHTML = `
+          <span>${m.name}</span>
+          <span class="autocomplete-item-anime">${m.anime}</span>
+        `;
+        item.addEventListener('click', () => {
+          document.getElementById('guessInput').value = m.name;
+          listElem.style.display = 'none';
+          submitGuess();
+        });
+        listElem.appendChild(item);
+      });
+      listElem.style.display = 'block';
+    }
+
+    function submitGuess() {
+      const userGuess = document.getElementById('guessInput').value.trim();
+      if (!userGuess) return;
+
+      clearInterval(session.timerInterval);
+      document.getElementById('autocompleteList').style.display = 'none';
+
+      const targetChar = session.currentQuestion;
+      const isCorrect = checkAnswerMatch(userGuess, targetChar);
+
+      if (isCorrect) {
+        handleCorrectAnswer();
+      } else {
+        handleWrongAnswer(userGuess);
+      }
+    }
+
+    function checkAnswerMatch(guess, targetChar) {
+      const clean = str => str.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const gClean = clean(guess);
+      
+      if (clean(targetChar.name) === gClean) return true;
+      if (targetChar.aliases.some(alias => clean(alias) === gClean)) return true;
+      return false;
+    }
+
+    function calculateQuestionPoints() {
+      // Base points based on hints used:
+      // 1 hint used = 100
+      // 2 hints used = 80
+      // 3 hints used = 60
+      // 4 hints used = 40
+      let points = 120 - (session.unlockedHintsCount * 20);
+      if (points < 20) points = 20;
+
+      // Difficulty Multipliers
+      let multiplier = 1.0;
+      if (session.currentQuestion.difficulty === 'Medium') multiplier = 1.25;
+      if (session.currentQuestion.difficulty === 'Hard') multiplier = 1.5;
+
+      // Speed Bonus (0.5 pts per second left)
+      let speedBonus = Math.floor(session.timeLeft * 1.5);
+
+      let total = Math.round((points * multiplier) + speedBonus);
+      return { totalPoints: total, speedBonus };
+    }
+
+    function handleCorrectAnswer() {
+      session.currentStreak++;
+      if (session.currentStreak > session.maxStreakInSession) {
+        session.maxStreakInSession = session.currentStreak;
+      }
+
+      const { totalPoints, speedBonus } = calculateQuestionPoints();
+      session.currentScore += totalPoints;
+
+      if (session.currentStreak >= 3) {
+        sounds.playStreak();
+      } else {
+        sounds.playCorrect();
+      }
+
+      session.breakdown.push({
+        charName: session.currentQuestion.name,
+        anime: session.currentQuestion.anime,
+        isCorrect: true,
+        pts: totalPoints,
+        hintsUsed: session.unlockedHintsCount
+      });
+
+      showFeedbackModal(true, totalPoints, speedBonus);
+    }
+
+    function handleWrongAnswer(userGuess) {
+      session.currentStreak = 0;
+      sounds.playWrong();
+
+      session.breakdown.push({
+        charName: session.currentQuestion.name,
+        anime: session.currentQuestion.anime,
+        isCorrect: false,
+        pts: 0,
+        hintsUsed: session.unlockedHintsCount
+      });
+
+      showFeedbackModal(false, 0, 0);
+    }
+
+    function handleTimeOut() {
+      session.currentStreak = 0;
+      sounds.playWrong();
+
+      session.breakdown.push({
+        charName: session.currentQuestion.name,
+        anime: session.currentQuestion.anime,
+        isCorrect: false,
+        pts: 0,
+        hintsUsed: session.unlockedHintsCount,
+        timedOut: true
+      });
+
+      showFeedbackModal(false, 0, 0, true);
+    }
+
+    function showFeedbackModal(isCorrect, ptsEarned, speedBonus, isTimeout = false) {
+      const modal = document.getElementById('feedbackOverlay');
+      const card = document.getElementById('feedbackCard');
+      const title = document.getElementById('feedbackTitle');
+      const charImg = document.getElementById('feedbackImg');
+      const charName = document.getElementById('feedbackCharName');
+      const animeName = document.getElementById('feedbackAnimeName');
+      const pointsText = document.getElementById('feedbackPoints');
+
+      if (isCorrect) {
+        title.textContent = "CORRECT! 🎉";
+        title.className = "feedback-title glow-text-purple";
+        pointsText.textContent = `+${ptsEarned} Points (+${speedBonus} Speed Bonus)`;
+        card.style.borderColor = "var(--neon-green)";
+      } else {
+        title.textContent = isTimeout ? "TIME EXPIRED! ⏱️" : "WRONG ANSWER! ❌";
+        title.className = "feedback-title glow-text-pink";
+        pointsText.textContent = "+0 Points";
+        card.style.borderColor = "var(--neon-pink)";
+      }
+
+      charImg.src = session.currentQuestion.image || "https://api.dicebear.com/7.x/bottts/svg?seed=placeholder";
+      charName.textContent = session.currentQuestion.name;
+      animeName.textContent = session.currentQuestion.anime;
+
+      modal.style.display = 'flex';
+    }
+
+    /* ==========================================================================
+       RESULTS & STATS PERSISTENCE
+       ========================================================================== */
+    function finishGameSession() {
+      // Update global user stats
+      userStats.gamesPlayed++;
+      userStats.totalScore += session.currentScore;
+      if (session.currentScore > userStats.bestScore) {
+        userStats.bestScore = session.currentScore;
+      }
+
+      const correctCount = session.breakdown.filter(b => b.isCorrect).length;
+      userStats.totalCorrect += correctCount;
+      userStats.totalQuestionsPlayed += session.breakdown.length;
+
+      if (session.maxStreakInSession > userStats.bestStreak) {
+        userStats.bestStreak = session.maxStreakInSession;
+      }
+
+      // Add record to Leaderboard
+      userStats.leaderboard.unshift({
+        playerName: userStats.playerName || "Shinobi",
+        score: session.currentScore,
+        accuracy: Math.round((correctCount / session.breakdown.length) * 100),
+        date: new Date().toLocaleDateString()
+      });
+
+      if (userStats.leaderboard.length > 20) {
+        userStats.leaderboard = userStats.leaderboard.slice(0, 20);
+      }
+
+      saveStats();
+
+      // Render Results Screen
+      document.getElementById('resFinalScore').textContent = session.currentScore;
+      document.getElementById('resCorrectCount').textContent = `${correctCount}/${session.breakdown.length}`;
+      document.getElementById('resBestStreak').textContent = `🔥 ${session.maxStreakInSession}`;
+
+      const totalSpeedBonus = session.breakdown.reduce((acc, b) => acc + (b.pts > 0 ? 10 : 0), 0);
+      document.getElementById('resTimeBonus').textContent = `+${totalSpeedBonus}`;
+
+      const breakdownList = document.getElementById('resBreakdownList');
+      breakdownList.innerHTML = '';
+
+      session.breakdown.forEach((item, i) => {
+        const row = document.createElement('div');
+        row.className = 'history-item';
+        row.innerHTML = `
+          <div>
+            <strong style="color: #fff;">${i + 1}. ${item.charName}</strong>
+            <div style="font-size: 0.7rem; color: var(--text-muted);">${item.anime}</div>
+          </div>
+          <div>
+            ${item.isCorrect 
+              ? `<span class="badge badge-purple">+${item.pts} pts</span>` 
+              : `<span class="badge badge-pink">WRONG</span>`}
+          </div>
+        `;
+        breakdownList.appendChild(row);
+      });
+
+      showView('results');
+      renderHomeStats();
+    }
+
+    function renderLeaderboard() {
+      const list = document.getElementById('leaderboardList');
+      list.innerHTML = '';
+
+      if (!userStats.leaderboard || userStats.leaderboard.length === 0) {
+        list.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 20px;">No games recorded yet!</div>`;
+        return;
+      }
+
+      const sorted = [...userStats.leaderboard].sort((a, b) => b.score - a.score);
+
+      sorted.forEach((item, idx) => {
+        const row = document.createElement('div');
+        row.className = 'history-item';
+        row.innerHTML = `
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="font-family: var(--font-display); font-weight: 700; color: var(--neon-cyan);">#${idx + 1}</div>
+            <div>
+              <strong style="color: #fff;">${item.playerName}</strong>
+              <div style="font-size: 0.7rem; color: var(--text-muted);">${item.date} • ${item.accuracy}% Acc</div>
+            </div>
+          </div>
+          <div style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--neon-amber);">
+            ${item.score} pts
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    // RUN ON LOAD
+    window.addEventListener('DOMContentLoaded', () => {
+      initApp();
+    });
+  </script>
+</body>
+</html>
